@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "91410621532",
+    "firebase_url": "https://secroicy-b5ba8.firebaseio.com",
+    "project_id": "secroicy-b5ba8",
+    "storage_bucket": "secroicy-b5ba8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91410621532:android:38cc4ae91ff7ec3b9af299",
+        "android_client_info": {
+          "package_name": "com.example.secroicy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "91410621532-vs2acvp74ksfd0okp5lkn1hipn9de1j2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.secroicy",
+            "certificate_hash": "edb3406786e5c59a5aaa94687f7972cc54a4e36b"
+          }
+        },
+        {
+          "client_id": "91410621532-onltg2n06hql5ohtld1d1k8sljkc19mo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbCfXE_77Mk_xsqIwn2Z-vdPpXd1-_9PY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "91410621532-onltg2n06hql5ohtld1d1k8sljkc19mo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

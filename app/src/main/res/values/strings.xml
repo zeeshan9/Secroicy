@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">Secroicy</string>
+    <string name="title_home">Take a secret pic of a user just by clicking the button below</string>
+    <string name="icon_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+
+    <string name="map_key" translatable="false">AIzaSyBKUc-FVdLIs8j4O_e50Ho16tDc1OQpNBo</string>
+
+
+    <string name="action_logout">Logout</string>
+    <string name="action_map">Location</string>
+    <string name="action_maps">Google map</string>
+
+    <string name="email_address">Email address</string>
+    <string name="user_name">User Name</string>
+    <string name="password">Password</string>
+    <string name="confirmpassword">Confirm Password</string>
+    <string name="login_now">LOGIN NOW</string>
+    <string name="sign_up">SIGN UP</string>
+    <string name="back">BACK</string>
+    <string name="don_t_remember_password">Don\'t Remember password?</string>
+    <string name="remember">Sign in using the account of Secroicy Web Portal</string>
+    <string name="dont_have_an_account">Don\'t have an account?</string>
+    <string name="sign_in_with_facebook">Sign in with Facebook</string>
+    <string name="or">or</string>
+    <string name="title_activity_maps">Map</string>
+
+</resources>
