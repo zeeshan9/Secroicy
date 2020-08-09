@@ -86,24 +86,45 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startService(new Intent(MainActivity.this, NotificationsMessagingService.class));
+//        startService(new Intent(MainActivity.this, NotificationsMessagingService.class));
 
-        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
-        PushNotifications.addDeviceInterest("hello");
+//        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
+//        PushNotifications.addDeviceInterest("hello");
+//
+//        PushNotifications.setOnMessageReceivedListenerForVisibleActivity(this, new PushNotificationReceivedListener() {
+//            @Override
+//            public void onMessageReceived(RemoteMessage remoteMessage) {
+//                String messagePayload = remoteMessage.getData().get("inAppNotificationMessage");
+//                if (messagePayload == null) {
+//                    // Message payload was not set for this notification
+//                    Log.i("MyActivity", "Payload was missing");
+//                } else {
+//                    Log.i("MyActivity", messagePayload);
+//                    // Now update the UI based on your message payload!
+//                }
+//            }
+//        });
 
-        PushNotifications.setOnMessageReceivedListenerForVisibleActivity(this, new PushNotificationReceivedListener() {
-            @Override
-            public void onMessageReceived(RemoteMessage remoteMessage) {
-                String messagePayload = remoteMessage.getData().get("inAppNotificationMessage");
-                if (messagePayload == null) {
-                    // Message payload was not set for this notification
-                    Log.i("MyActivity", "Payload was missing");
-                } else {
-                    Log.i("MyActivity", messagePayload);
-                    // Now update the UI based on your message payload!
-                }
-            }
-        });
+//        PushNotifications.start(
+//                getApplicationContext(),
+//                "410ee95b-fffc-4c01-aaa5-d7760e0358cb"
+//
+//        );
+//
+//        PushNotifications.subscribe("hello");
+//
+//        PushNotifications.setOnMessageReceivedListener(
+//                new PushNotificationReceivedListener() {
+//                    @Override
+//                    public void onMessageReceived(RemoteMessage remoteMessage) {
+//                        String body = remoteMessage.getNotification().getBody();
+//                        System.out.println(body);
+//                    }
+//                }
+//        );
+
+        PushNotifications.start(getApplicationContext(), "92aa13be-5600-45b4-9904-62fc7d5927f2");
+        PushNotifications.addDeviceInterest("debug-hello");
 
         mTextMessage = (TextView) findViewById(R.id.message);
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);

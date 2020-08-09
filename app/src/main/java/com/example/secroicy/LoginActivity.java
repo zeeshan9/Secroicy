@@ -135,7 +135,7 @@ public class LoginActivity extends AppCompatActivity {
     public void LoginRequest(View view){
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = "http://192.168.100.52:5000/api/auth";
+            String URL = "http://192.168.100.10:5000/api/auth";
             JSONObject jsonBody = new JSONObject();
 
             String email = emailId.getText().toString();
