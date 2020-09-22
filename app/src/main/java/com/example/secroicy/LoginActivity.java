@@ -46,7 +46,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +54,10 @@ public class LoginActivity extends AppCompatActivity {
 //        Toolbar toolbar = findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
-        mFirebaseAuth = FirebaseAuth.getInstance();
+/*        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);*/
+
+
         emailId = findViewById(R.id.signinemailadress_id);
         password = findViewById(R.id.signinpassword_id);
         btnsignip = findViewById(R.id.btn_signin_id);
@@ -128,14 +130,14 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        mFirebaseAuth .addAuthStateListener(mAuthStateListener);
+        /*mFirebaseAuth .addAuthStateListener(mAuthStateListener);*/
 
     }
 
     public void LoginRequest(View view){
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = "http://192.168.100.10:5000/api/auth";
+            String URL = "http://10.249.245.215:5000/api/auth";
             JSONObject jsonBody = new JSONObject();
 
             String email = emailId.getText().toString();
@@ -147,7 +149,7 @@ public class LoginActivity extends AppCompatActivity {
                 } else if (pwd.isEmpty()) {
                     password.setError("Please enter your password");
                     password.requestFocus();
-                }else if (email.isEmpty() && pwd.isEmpty()) {
+                } else if (email.isEmpty() && pwd.isEmpty()) {
                     Toast.makeText(LoginActivity.this, "Fields are emtpy", Toast.LENGTH_SHORT).show();
                 emailId.requestFocus();
                 password.requestFocus();
