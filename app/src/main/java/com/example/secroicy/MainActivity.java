@@ -13,6 +13,13 @@ import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.androidhiddencamera.HiddenCameraFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -46,6 +53,7 @@ import com.pusher.pushnotifications.PushNotifications;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,12 +64,38 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    ImageView imageView;
+    Button choose, upload;
+    int PICK_IMAGE_REQUEST = 111;
+    String imageUploadUrl ="http://192.168.100.52:5000/poll/uploadimage";
+    Bitmap bitmap;
+    ProgressDialog progressDialog;
+
+    // views for button
+    private Button btnSelect, btnUpload;
+
+    // view for image view
+//    private ImageView imageView;
+
+    // Uri indicates, where the image will be picked from
+    private Uri filePath;
+
+    // request code
+//    private final int PICK_IMAGE_REQUEST = 22;
+
+    // instance for firebase storage and StorageReference
+    FirebaseStorage storage;
+    StorageReference storageReference;
 
     private HiddenCameraFragment mHiddenCameraFragment;
 
@@ -96,21 +130,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    // views for button
-    private Button btnSelect, btnUpload;
 
-    // view for image view
-    private ImageView imageView;
-
-    // Uri indicates, where the image will be picked from
-    private Uri filePath;
-
-    // request code
-    private final int PICK_IMAGE_REQUEST = 22;
-
-    // instance for firebase storage and StorageReference
-    FirebaseStorage storage;
-    StorageReference storageReference;
 
 
     @Override
@@ -119,6 +139,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         uploaddata();
+
+        Button startBtn = (Button) findViewById(R.id.sendEmail);
+        startBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                sendEmail();
+            }
+        });
 
 //        startService(new Intent(MainActivity.this, NotificationsMessagingService.class));
 
@@ -416,27 +443,106 @@ public class MainActivity extends AppCompatActivity {
         btnUpload = findViewById(R.id.btnUpload);
         imageView = findViewById(R.id.imageView3);
 
-        // get the Firebase  storage reference
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
-
-        // on pressing btnSelect SelectImage() is called
+        //opening image chooser option
         btnSelect.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                SelectImage();
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_PICK);
+                startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
             }
         });
 
-        // on pressing btnUpload uploadImage() is called
         btnUpload.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                uploadImage();
+            public void onClick(View v) {
+                progressDialog = new ProgressDialog(MainActivity.this);
+                progressDialog.setMessage("Uploading, please wait...");
+                progressDialog.show();
+
+                //converting image to base64 string
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] imageBytes = baos.toByteArray();
+                final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+                //sending image to server
+                StringRequest request = new StringRequest(Request.Method.POST, imageUploadUrl, new Response.Listener<String>(){
+                    @Override
+                    public void onResponse(String s) {
+                        progressDialog.dismiss();
+                        if(s.equals("true")){
+                            Toast.makeText(MainActivity.this, "Uploaded Successful", Toast.LENGTH_LONG).show();
+                        }
+                        else{
+                            Toast.makeText(MainActivity.this, "Some error occurred!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                },new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        Toast.makeText(MainActivity.this, "Some error occurred -> "+volleyError, Toast.LENGTH_LONG).show();
+//                        Log.e("voller testing", volleyError.getMessage());
+                        Log.e("voller testing", volleyError.networkResponse.toString());
+                    }
+                }) {
+
+                    //adding parameters to send
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        Map<String, String> parameters = new HashMap<>();
+                        parameters.put("image", imageString);
+                        return parameters;
+                    }
+                };
+
+                RequestQueue rQueue = Volley.newRequestQueue(MainActivity.this);
+                rQueue.add(request);
             }
         });
+
+
+        // get the Firebase  storage reference
+//        storage = FirebaseStorage.getInstance();
+//        storageReference = storage.getReference();
+//
+//        // on pressing btnSelect SelectImage() is called
+//        btnSelect.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v)
+//            {
+//                SelectImage();
+//            }
+//        });
+//
+//        // on pressing btnUpload uploadImage() is called
+//        btnUpload.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v)
+//            {
+//                uploadImage();
+//            }
+//        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri filePath = data.getData();
+
+            try {
+                //getting image from gallery
+                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+
+                //Setting image to ImageView
+                imageView.setImageBitmap(bitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // Select Image method
@@ -455,45 +561,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Override onActivityResult method
-    @Override
-    protected void onActivityResult(int requestCode,
-                                    int resultCode,
-                                    Intent data)
-    {
-
-        super.onActivityResult(requestCode,
-                resultCode,
-                data);
-
-        // checking request code and result code
-        // if request code is PICK_IMAGE_REQUEST and
-        // resultCode is RESULT_OK
-        // then set image in the image view
-        if (requestCode == PICK_IMAGE_REQUEST
-                && resultCode == RESULT_OK
-                && data != null
-                && data.getData() != null) {
-
-            // Get the Uri of data
-            filePath = data.getData();
-            try {
-
-                // Setting image on image view using Bitmap
-                Bitmap bitmap = MediaStore
-                        .Images
-                        .Media
-                        .getBitmap(
-                                getContentResolver(),
-                                filePath);
-                imageView.setImageBitmap(bitmap);
-            }
-
-            catch (IOException e) {
-                // Log the exception
-                e.printStackTrace();
-            }
-        }
-    }
+//    @Override
+//    protected void onActivityResult(int requestCode,
+//                                    int resultCode,
+//                                    Intent data)
+//    {
+//
+//        super.onActivityResult(requestCode,
+//                resultCode,
+//                data);
+//
+//        // checking request code and result code
+//        // if request code is PICK_IMAGE_REQUEST and
+//        // resultCode is RESULT_OK
+//        // then set image in the image view
+//        if (requestCode == PICK_IMAGE_REQUEST
+//                && resultCode == RESULT_OK
+//                && data != null
+//                && data.getData() != null) {
+//
+//            // Get the Uri of data
+//            filePath = data.getData();
+//            try {
+//
+//                // Setting image on image view using Bitmap
+//                Bitmap bitmap = MediaStore
+//                        .Images
+//                        .Media
+//                        .getBitmap(
+//                                getContentResolver(),
+//                                filePath);
+//                imageView.setImageBitmap(bitmap);
+//            }
+//
+//            catch (IOException e) {
+//                // Log the exception
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     public static File getDir() {
         File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -575,5 +681,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    protected void sendEmail() {
+        Log.i("Send email", "");
+        String[] TO = {"zeeshanmushtaq76@gmail.com"};
+        String[] CC = {""};
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+        emailIntent.putExtra(Intent.EXTRA_CC, CC);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "testing secroicy");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Email message goes here from secroicy");
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            finish();
+            Log.i("Finish sending email", "");
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(MainActivity.this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
 

@@ -137,23 +137,23 @@ public class LoginActivity extends AppCompatActivity {
     public void LoginRequest(View view){
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = "http://10.249.245.215:5000/api/auth";
+            String URL = "http://192.168.100.52:5000/api/auth";
             JSONObject jsonBody = new JSONObject();
 
             String email = emailId.getText().toString();
             String pwd = password.getText().toString();
 
             if (email.isEmpty()) {
-                    emailId.setError("Please enter email Id");
-                    emailId.requestFocus();
-                } else if (pwd.isEmpty()) {
-                    password.setError("Please enter your password");
-                    password.requestFocus();
-                } else if (email.isEmpty() && pwd.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Fields are emtpy", Toast.LENGTH_SHORT).show();
+                emailId.setError("Please enter email Id");
+                emailId.requestFocus();
+            } else if (pwd.isEmpty()) {
+                password.setError("Please enter your password");
+                password.requestFocus();
+            } else if (email.isEmpty() && pwd.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Fields are emtpy", Toast.LENGTH_SHORT).show();
                 emailId.requestFocus();
                 password.requestFocus();
-                }else if (!(email.isEmpty() && pwd.isEmpty())) {
+            }else if (!(email.isEmpty() && pwd.isEmpty())) {
                 jsonBody.put("email", email);
                 jsonBody.put("password", pwd);
             }
@@ -194,8 +194,8 @@ public class LoginActivity extends AppCompatActivity {
                         responseString = String.valueOf(response.statusCode);
                         // can get more details such as response.headers
 //                        Toast.makeText(getApplicationContext(),"Login Successfull",Toast.LENGTH_SHORT).show();
-                            Log.i("Login==", response.toString());
-                            startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                        Log.i("Login==", response.toString());
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }
@@ -205,35 +205,6 @@ public class LoginActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-
-
-//        final TextView textView = (TextView) findViewById(R.id.text);
-//// ...
-//
-//// Instantiate the RequestQueue.
-//        RequestQueue queue = Volley.newRequestQueue(this);
-//        String url ="http://localhost:5000/api/auth";
-//
-//// Request a string response from the provided URL.
-//        StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
-//                new Response.Listener<String>() {
-//                    @Override
-//                    public void onResponse(String response) {
-//                        // Display the first 500 characters of the response string.
-////                        textView.setText("Response is: "+ response.substring(0,500));
-//                        startActivity(new Intent(LoginActivity.this,LoginActivity.class));
-//                    }
-//                }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                textView.setText("That didn't work!");
-//            }
-//        });
-//
-//// Add the request to the RequestQueue.
-//        queue.add(stringRequest);
-
     }
 
 

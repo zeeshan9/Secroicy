@@ -18,6 +18,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -32,6 +42,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,25 +124,29 @@ public static final int RequestPermissionCode = 1;
         sendlocationbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String longitude = longitudeText.getText().toString();
-                String latitude = latitudeText.getText().toString();
-                String time = Time.getText().toString();
-
-                // Create a Map to store the data we want to set
-                Map<String, Object> locationdata = new HashMap<>();
-                locationdata.put("longitude", longitude);
-                locationdata.put("latitude", latitude);
-                locationdata.put("Time", time);
-
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                db.collection("lostmobileinfo").document().set(locationdata).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(MapActivity.this, "location added",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+                sendlocation();
+//                String longitude = longitudeText.getText().toString();
+//                String latitude = latitudeText.getText().toString();
+//                String time = Time.getText().toString();
+//
+//                // Create a Map to store the data we want to set
+//                Map<String, Object> locationdata = new HashMap<>();
+//                locationdata.put("longitude", longitude);
+//                locationdata.put("latitude", latitude);
+//                locationdata.put("Time", time);
+//
+//                FirebaseFirestore db = FirebaseFirestore.getInstance();
+//                db.collection("lostmobileinfo").document().set(locationdata).addOnCompleteListener(new OnCompleteListener<Void>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<Void> task) {
+//                        if (task.isSuccessful()) {
+//                            Toast.makeText(MapActivity.this, "location added",Toast.LENGTH_SHORT).show();
+//                        } else {
+//                            Toast.makeText(getApplicationContext(), "Error mainn =>",Toast.LENGTH_SHORT).show();
+//                            Log.i("map acticity","eror is == "+ task.getException());
+//                        }
+//                    }
+//                });
             }
         });
 
@@ -188,9 +206,6 @@ public static final int RequestPermissionCode = 1;
         }
     }
 
-    public void sendlocation(View view){
-
-    }
 
     private void requestPermission() {
         ActivityCompat.requestPermissions(MapActivity.this, new
@@ -252,5 +267,76 @@ public static final int RequestPermissionCode = 1;
         }
 
         return false; //default
+    }
+
+    // Testing send ing data to firstore
+    public void sendlocation(){
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = "http://192.168.100.52:5000/poll/location";
+            JSONObject jsonBody = new JSONObject();
+
+            String longitude = longitudeText.getText().toString();
+            String latitude = latitudeText.getText().toString();
+            String time = Time.getText().toString();
+
+            // Create a Map to store the data we want to set
+//            Map<String, Object> locationdata = new HashMap<>();
+//            locationdata.put("longitude", longitude);
+//            locationdata.put("latitude", latitude);
+//            locationdata.put("Time", time);
+
+
+
+            jsonBody.put("longitude", longitude);
+            jsonBody.put("latitude", latitude);
+            jsonBody.put("time", time);
+
+            final String requestBody = jsonBody.toString();
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        responseString = String.valueOf(response.statusCode);
+                        // can get more details such as response.headers
+//                        Toast.makeText(getApplicationContext(),"Login Successfull",Toast.LENGTH_SHORT).show();
+                        Log.i("Login==", response.toString());
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                    }
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            requestQueue.add(stringRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
