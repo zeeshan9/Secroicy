@@ -84,9 +84,6 @@ public class MainActivity extends AppCompatActivity {
     // views for button
     private Button btnSelect, btnUpload;
 
-    // view for image view
-//    private ImageView imageView;
-
     // Uri indicates, where the image will be picked from
     private Uri filePath;
 
