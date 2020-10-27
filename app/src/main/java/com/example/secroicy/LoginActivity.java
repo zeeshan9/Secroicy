@@ -1,19 +1,21 @@
 package com.example.secroicy;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,9 +25,6 @@ import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -34,14 +33,10 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 public class LoginActivity extends AppCompatActivity {
 
     EditText emailId, password;
-    TextView btnsignup;
-    Button btnsignip;
+    TextView btnsignup,portal_link;
     FirebaseAuth mFirebaseAuth;
 
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -51,17 +46,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-
-/*        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);*/
-
-
         emailId = findViewById(R.id.signinemailadress_id);
         password = findViewById(R.id.signinpassword_id);
-        btnsignip = findViewById(R.id.btn_signin_id);
         btnsignup = findViewById(R.id.dont_ve_acnt_id);
+        portal_link = findViewById(R.id.portal_link);
 
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -77,67 +65,33 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
-//        btnsignip.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String email = emailId.getText().toString();
-//
-//                String pwd = password.getText().toString();
-//                if (email.isEmpty()) {
-//                    emailId.setError("Please enter email Id");
-//                    emailId.requestFocus();
-//                } else if (pwd.isEmpty()) {
-//                    password.setError("Please enter your password");
-//                    password.requestFocus();
-//                }else if (email.isEmpty() && pwd.isEmpty()) {
-//                    Toast.makeText(LoginActivity.this, "Fields are emtpy", Toast.LENGTH_SHORT).show();
-//                }else if (!(email.isEmpty() && pwd.isEmpty())) {
-//                    mFirebaseAuth.signInWithEmailAndPassword(email, pwd).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<AuthResult> task) {
-//                            if (!task.isSuccessful()) {
-//                                Toast.makeText(LoginActivity.this, "Login Error, Please Login again", Toast.LENGTH_SHORT).show();
-//                            }else {
-//                                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-//                            }
-//                        }
-//                    });
-//                }
-//                else{
-//                    Toast.makeText(LoginActivity.this, "Error Occured!", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-
         btnsignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, LoginActivity.class));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(NetUtils.baseURLClient+"register"));
+                startActivity(browserIntent);
             }
         });
 
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
+        portal_link.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(NetUtils.baseURLClient+"login"));
+                startActivity(browserIntent);
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        /*mFirebaseAuth .addAuthStateListener(mAuthStateListener);*/
 
     }
 
     public void LoginRequest(View view){
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = "http://192.168.100.52:5000/api/auth";
+            String URL = NetUtils.baseURServer+"api/auth";
             JSONObject jsonBody = new JSONObject();
 
             String email = emailId.getText().toString();
@@ -192,14 +146,19 @@ public class LoginActivity extends AppCompatActivity {
                     String responseString = "";
                     if (response != null) {
                         responseString = String.valueOf(response.statusCode);
-                        // can get more details such as response.headers
-//                        Toast.makeText(getApplicationContext(),"Login Successfull",Toast.LENGTH_SHORT).show();
                         Log.i("Login==", response.toString());
-                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+//                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                        startActivity(new Intent(getApplicationContext(),HomeActivity.class));
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }
             };
+
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    10000,
+                    0,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
 
             requestQueue.add(stringRequest);
         } catch (JSONException e) {
@@ -208,8 +167,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-public void testing(View view){
-        startActivity(new Intent(getApplicationContext(), HiddenImageList.class));
-}
-
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Really Exit?")
+                .setMessage("Are you sure you want to exit application?")
+                .setNegativeButton(android.R.string.no, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        finish();
+                    }
+                }).create().show();
+    }
 }
