@@ -26,4 +26,7 @@
     <string name="or">or</string>
     <string name="title_activity_maps">Map</string>
 
+    <string name="ok">ok</string>
+    <string name="cancel">Cancel</string>
+
 </resources>

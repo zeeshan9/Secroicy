@@ -31,14 +31,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.pusher.client.Pusher;
-import com.pusher.client.PusherOptions;
-import com.pusher.client.channel.Channel;
-import com.pusher.client.channel.PusherEvent;
-import com.pusher.client.channel.SubscriptionEventListener;
-import com.pusher.client.connection.ConnectionEventListener;
-import com.pusher.client.connection.ConnectionState;
-import com.pusher.client.connection.ConnectionStateChange;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -66,7 +58,6 @@ import android.widget.Toolbar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -77,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     Button choose, upload;
     int PICK_IMAGE_REQUEST = 111;
-    String imageUploadUrl ="http://192.168.100.52:5000/poll/uploadimage";
+    String imageUploadUrl ="http://137.226.182.185:5000/poll/uploadimage";
     Bitmap bitmap;
     ProgressDialog progressDialog;
 
@@ -115,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 //                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                     return true;
                 case R.id.navigation_dashboard:
-                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                    startActivity(new Intent(getApplicationContext(), HomeActivity_old.class));
                     mTextMessage.setText(R.string.title_home);
 //                    mTextMessage.setText(R.string.title_dashboard);
                     return true;
@@ -135,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        uploaddata();
+       // uploaddata();
 
         Button startBtn = (Button) findViewById(R.id.sendEmail);
         startBtn.setOnClickListener(new View.OnClickListener() {
@@ -228,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_using_service).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mHiddenCameraFragment != null) {    //Remove fragment from container if present
+                if (mHiddenCameraFragment != null) {
                     getSupportFragmentManager()
                             .beginTransaction()
                             .remove(mHiddenCameraFragment)
@@ -237,10 +228,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 startService(new Intent(MainActivity.this, HiddenService.class));
-
-                //                finish();
-                //                System.exit(0);
-
             }
         });
 

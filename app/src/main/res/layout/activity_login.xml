@@ -80,16 +80,17 @@
         app:layout_constraintTop_toBottomOf="@id/signinpassword_id" />
 
     <TextView
-        android:id="@+id/forgot_signinpassword_id"
+        android:id="@+id/portal_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="80dp"
         android:text="@string/remember"
         android:textColor="@color/login_form_details"
         android:textSize="16sp"
 
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
+        app:layout_constraintHorizontal_bias="0.466"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@id/btn_signin_id" />
 
@@ -114,51 +115,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/footer_line" />
 
-    <TextView
-        android:id="@+id/facebook_login_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_if_square_facebook"
-
-        android:textColor="@color/login_form_details"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/footer_line"
-        app:layout_constraintEnd_toStartOf="@id/guideline_right"
-        app:layout_constraintStart_toStartOf="@id/guideline_left" />
-
     <View
         android:id="@+id/line1"
         android:layout_width="120dp"
         android:layout_height="1dp"
+        android:layout_marginTop="36dp"
         android:background="@color/login_form_details_medium"
-        app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@+id/forgot_signinpassword_id"
-        app:layout_constraintBottom_toTopOf="@+id/facebook_login_id"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintEnd_toStartOf="@+id/or"/>
-
-    <TextView
-        android:id="@+id/or"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/or"
-        android:textColor="@color/login_form_details"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/line1"
-        app:layout_constraintTop_toTopOf="@+id/line1"
-        app:layout_constraintEnd_toStartOf="@+id/line2"
-        app:layout_constraintStart_toEndOf="@+id/line1" />
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@+id/portal_link" />
 
     <View
         android:id="@+id/line2"
         android:layout_width="120dp"
         android:layout_height="1dp"
+        android:layout_marginTop="36dp"
         android:background="@color/login_form_details_medium"
-        app:layout_constraintBottom_toBottomOf="@+id/or"
         app:layout_constraintEnd_toEndOf="@id/guideline_right"
-        app:layout_constraintStart_toEndOf="@+id/or"
-        app:layout_constraintTop_toTopOf="@+id/or" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_signin_id" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

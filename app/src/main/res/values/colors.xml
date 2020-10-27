@@ -10,4 +10,10 @@
     <color name="login_form_details">#ccffffff</color>
     <color name="login_form_details_light">#1affffff</color>
     <color name="login_form_details_medium">#66ffffff</color>
+
+    <color name="snowWhite">#e8eaf6</color>
+    <color name="customized_red">#4b027e</color>
+    <color name="black_overlay">#66000000</color>
+
+
 </resources>
