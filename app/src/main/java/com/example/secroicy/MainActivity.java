@@ -15,10 +15,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.androidhiddencamera.HiddenCameraFragment;
@@ -44,6 +48,9 @@ import com.pusher.pushnotifications.PushNotifications;
 
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
@@ -57,8 +64,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -69,12 +80,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageView imageView;
     Button choose, upload;
     int PICK_IMAGE_REQUEST = 111;
-    String imageUploadUrl ="http://137.226.182.185:5000/poll/uploadimage";
     Bitmap bitmap;
     ProgressDialog progressDialog;
+    String latitude="", longitude="", encodedImg="", time="";
+    boolean triggerCheck= false;
 
     ImageView capture_snapshot,get_snapshot,get_location,upload_image_location,report_lost_phone,post_lost_phone,search_phone,track_location,logout;
 
+    Handler mHandler;
     // views for button
     private Button btnSelect, btnUpload;
 
@@ -149,42 +162,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         search_phone.setOnClickListener(this);
         logout.setOnClickListener(this);
 
+        Intent intent = getIntent();
+        latitude = intent.getStringExtra("latitude");
+        longitude = intent.getStringExtra("longitude");
+        time = intent.getStringExtra("time");
+        triggerCheck = intent.getBooleanExtra("TriggerCheck",false);
+        Toast.makeText(this,"TriggerCheck:"+triggerCheck,Toast.LENGTH_LONG).show();
 
 
-//        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
-//        PushNotifications.addDeviceInterest("hello");
-//
-//        PushNotifications.setOnMessageReceivedListenerForVisibleActivity(this, new PushNotificationReceivedListener() {
-//            @Override
-//            public void onMessageReceived(RemoteMessage remoteMessage) {
-//                String messagePayload = remoteMessage.getData().get("inAppNotificationMessage");
-//                if (messagePayload == null) {
-//                    // Message payload was not set for this notification
-//                    Log.i("MyActivity", "Payload was missing");
-//                } else {
-//                    Log.i("MyActivity", messagePayload);
-//                    // Now update the UI based on your message payload!
-//                }
-//            }
-//        });
-
-//        PushNotifications.start(
-//                getApplicationContext(),
-//                "410ee95b-fffc-4c01-aaa5-d7760e0358cb"
-//
-//        );
-//
-//        PushNotifications.subscribe("hello");
-//NotificationsMessagingService
-//        PushNotifications.setOnMessageReceivedListener(
-//                new PushNotificationReceivedListener() {
-//                    @Override
-//                    public void onMessageReceived(RemoteMessage remoteMessage) {
-//                        String body = remoteMessage.getNotification().getBody();
-//                        System.out.println(body);
-//                    }
-//                }
-//        );
 
         PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
 //        PushNotifications.addDeviceInterest("debug-hello");
@@ -196,7 +181,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String messagePayload = remoteMessage.getData().get("inAppNotificationMessage");
                 if (messagePayload == null) {
                     Log.i("MyActivity", "Payload was missing");
-                    MainActivity.this.PusherResponse();
+                    Message message = mHandler.obtainMessage(1, "triggered");
+                    message.sendToTarget();
                 } else {
                     Log.i("MyActivity", messagePayload);
                     Log.i("MyActivity", "I am here");
@@ -213,21 +199,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(MainActivity.this, "Permission is already granted!", Toast.LENGTH_SHORT).show();
 //            return;
         }
-        requestPermission();
+        else{
+
+            requestPermission();
+        }
 
         if (Build.VERSION.SDK_INT >= 23) {
             String[] PERMISSIONS = {android.Manifest.permission.WRITE_EXTERNAL_STORAGE};
             if (!hasPermissions(getApplicationContext(), PERMISSIONS)) {
                 ActivityCompat.requestPermissions((Activity) MainActivity.this, PERMISSIONS, STORAGE_CODE );
-            } else {
-                //do here
-                requestPermission();
             }
+//            else {
+//                //do here
+//                requestPermission();
+//            }
         } else {
             //do here
             requestPermission();
 
 
+        }
+
+
+        mHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message message) {
+                Intent intent = new Intent(MainActivity.this,MapActivity.class);
+                intent.putExtra("TriggerCheck",true);
+                startActivity(intent);
+                finish();
+            }
+        };
+
+        if(triggerCheck){
+            Toast.makeText(this,"Location retrieved!", Toast.LENGTH_LONG).show();
+            takeHiddenSnapShot();
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this,"Image captured!", Toast.LENGTH_LONG).show();
+                    getPictureFromStorage();
+                }
+            }, 1000);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this,"Image Loaded!", Toast.LENGTH_LONG).show();
+                    uploadImageLocation();
+                }
+            }, 1000);
         }
 
     }
@@ -245,6 +267,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
+    public void getPictureFromStorage(){
+        File basePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        String absolutePath = basePath+ "/SecroicyApp/secroicyapp.jpeg";
+        File imgFile = new  File(absolutePath);
+
+        if(imgFile.exists()){
+            Bitmap bitmapImg = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            encodedImg = convertBitmapToString(bitmapImg);
+        }
+    }
+
     /*              onClick handler           */
     @Override
     public void onClick(View view)
@@ -255,21 +289,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         else if(view.getId()==R.id.get_snapshot)
         {
-            File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            String dirPath = sdDir+ "SecroicyApp";
-
-
-//            Intent intent = new Intent();
-//            intent.setType("image/*");
-//            intent.setAction(Intent.ACTION_PICK);
-//            startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
+            getPictureFromStorage();
         }
         else if(view.getId()==R.id.get_location)
         {
             startActivity(new Intent(MainActivity.this,MapActivity.class));
+            finish();
         }
         else if(view.getId()==R.id.upload_image_location)
         {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Send data?")
+                    .setMessage("Are you sure you want to send data? Make sure you have captured image and location!")
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            uploadImageLocation();
+                        }
+                    }).create().show();
 
         }
         else if(view.getId()==R.id.track_location)
@@ -457,94 +495,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
-    /*public void uploaddata() {
-        // initialise views
-        btnSelect = findViewById(R.id.btnChoose);
-        btnUpload = findViewById(R.id.btnUpload);
-        imageView = findViewById(R.id.imageView3);
-
-        //opening image chooser option
-        btnSelect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_PICK);
-                startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
-            }
-        });
-
-        btnUpload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                progressDialog = new ProgressDialog(MainActivity.this);
-                progressDialog.setMessage("Uploading, please wait...");
-                progressDialog.show();
-
-                //converting image to base64 string
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] imageBytes = baos.toByteArray();
-                final String imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
-
-                //sending image to server
-                StringRequest request = new StringRequest(Request.Method.POST, imageUploadUrl, new Response.Listener<String>(){
-                    @Override
-                    public void onResponse(String s) {
-                        progressDialog.dismiss();
-                        if(s.equals("true")){
-                            Toast.makeText(MainActivity.this, "Uploaded Successful", Toast.LENGTH_LONG).show();
-                        }
-                        else{
-                            Toast.makeText(MainActivity.this, "Some error occurred!", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                },new Response.ErrorListener(){
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        Toast.makeText(MainActivity.this, "Some error occurred -> "+volleyError, Toast.LENGTH_LONG).show();
-//                        Log.e("voller testing", volleyError.getMessage());
-                        Log.e("voller testing", volleyError.networkResponse.toString());
-                    }
-                }) {
-
-                    //adding parameters to send
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> parameters = new HashMap<>();
-                        parameters.put("image", imageString);
-                        return parameters;
-                    }
-                };
-
-                RequestQueue rQueue = Volley.newRequestQueue(MainActivity.this);
-                rQueue.add(request);
-            }
-        });
-
-
-        // get the Firebase  storage reference
-//        storage = FirebaseStorage.getInstance();
-//        storageReference = storage.getReference();
-//
-//        // on pressing btnSelect SelectImage() is called
-//        btnSelect.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v)
-//            {
-//                SelectImage();
-//            }
-//        });
-//
-//        // on pressing btnUpload uploadImage() is called
-//        btnUpload.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v)
-//            {
-//                uploadImage();
-//            }
-//        });
-    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -580,46 +530,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 PICK_IMAGE_REQUEST);
     }
 
-    // Override onActivityResult method
-//    @Override
-//    protected void onActivityResult(int requestCode,
-//                                    int resultCode,
-//                                    Intent data)
-//    {
-//
-//        super.onActivityResult(requestCode,
-//                resultCode,
-//                data);
-//
-//        // checking request code and result code
-//        // if request code is PICK_IMAGE_REQUEST and
-//        // resultCode is RESULT_OK
-//        // then set image in the image view
-//        if (requestCode == PICK_IMAGE_REQUEST
-//                && resultCode == RESULT_OK
-//                && data != null
-//                && data.getData() != null) {
-//
-//            // Get the Uri of data
-//            filePath = data.getData();
-//            try {
-//
-//                // Setting image on image view using Bitmap
-//                Bitmap bitmap = MediaStore
-//                        .Images
-//                        .Media
-//                        .getBitmap(
-//                                getContentResolver(),
-//                                filePath);
-//                imageView.setImageBitmap(bitmap);
-//            }
-//
-//            catch (IOException e) {
-//                // Log the exception
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     public static File getDir() {
         File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
@@ -725,10 +635,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private void PusherResponse(){
-        Toast.makeText(this,"Pusher Test ", Toast.LENGTH_LONG).show();
+    public  String convertBitmapToString (Bitmap bitmap) {
+        ByteArrayOutputStream outputStream =  new  ByteArrayOutputStream ();
+        bitmap.compress (Bitmap.CompressFormat. JPEG ,  70 , outputStream);
+        return  Base64.encodeToString (outputStream.toByteArray (), Base64. DEFAULT );
     }
 
 
+    public void uploadImageLocation(){
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = NetUtils.baseURServer+"poll/uploaddata";
+            JSONObject jsonBody = new JSONObject();
+
+
+            jsonBody.put("email", NetUtils.email);
+            jsonBody.put("latitude", latitude);
+            jsonBody.put("longitude", longitude);
+            jsonBody.put("time", time);
+            jsonBody.put("imageUrl", encodedImg);
+
+            final String requestBody = jsonBody.toString();
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        responseString = String.valueOf(response.statusCode);
+                        if(responseString.equals("200")){
+                            Toast.makeText(MainActivity.this,"data sent successfully", Toast.LENGTH_LONG).show();
+                            triggerCheck = false;
+                        }
+                    }
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    10000,
+                    0,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+            requestQueue.add(stringRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
 

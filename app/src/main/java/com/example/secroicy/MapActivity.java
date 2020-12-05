@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -83,6 +84,7 @@ public static final int RequestPermissionCode = 1;
     protected Button sendlocationbtn;
     protected Location lastLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    boolean triggerCheck = false;
 
 //    FirebaseAuth mFirebaseAuth;
 //    private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -91,6 +93,12 @@ public static final int RequestPermissionCode = 1;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        Intent intent = getIntent();
+        triggerCheck = intent.getBooleanExtra("TriggerCheck",false);
+
+        Toast.makeText(this,"TriggerCheck:"+triggerCheck,Toast.LENGTH_LONG).show();
+
 
      /*   mFirebaseAuth = FirebaseAuth.getInstance();*/
 
@@ -113,42 +121,13 @@ public static final int RequestPermissionCode = 1;
                 }
             }
         };*/
-        sendlocationbtn = (Button) findViewById(R.id.sendlocationbtn_id);
-        longitudeText = (TextView) findViewById(R.id.longitude_text);
+            longitudeText = (TextView) findViewById(R.id.longitude_text);
         latitudeText = (TextView) findViewById(R.id.latitude_text);
 
         Accuracy = (TextView) findViewById(R.id.altitude_id);
         Time = (TextView) findViewById(R.id.TIme_id);
         Altitude = (TextView) findViewById(R.id.altitude_id);
 
-        sendlocationbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendlocation();
-//                String longitude = longitudeText.getText().toString();
-//                String latitude = latitudeText.getText().toString();
-//                String time = Time.getText().toString();
-//
-//                // Create a Map to store the data we want to set
-//                Map<String, Object> locationdata = new HashMap<>();
-//                locationdata.put("longitude", longitude);
-//                locationdata.put("latitude", latitude);
-//                locationdata.put("Time", time);
-//
-//                FirebaseFirestore db = FirebaseFirestore.getInstance();
-//                db.collection("lostmobileinfo").document().set(locationdata).addOnCompleteListener(new OnCompleteListener<Void>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<Void> task) {
-//                        if (task.isSuccessful()) {
-//                            Toast.makeText(MapActivity.this, "location added",Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            Toast.makeText(getApplicationContext(), "Error mainn =>",Toast.LENGTH_SHORT).show();
-//                            Log.i("map acticity","eror is == "+ task.getException());
-//                        }
-//                    }
-//                });
-            }
-        });
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -200,6 +179,18 @@ public static final int RequestPermissionCode = 1;
                                 Time.setText(String.valueOf(location.getTime()));
                                 Altitude.setText(String.valueOf(location.getAccuracy()));
 
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Intent intent = new Intent(MapActivity.this,MainActivity.class);
+                                        intent.putExtra("latitude",latitudeText.getText().toString());
+                                        intent.putExtra("longitude",longitudeText.getText().toString());
+                                        intent.putExtra("time",Time.getText().toString());
+                                        intent.putExtra("TriggerCheck",triggerCheck);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                }, 1000);
                             }
                         }
                     });
