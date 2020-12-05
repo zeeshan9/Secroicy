@@ -41,6 +41,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         post_lost_phone.setOnClickListener(this);
         search_phone.setOnClickListener(this);
         logout.setOnClickListener(this);*/
+
+
+
+
     }
     @Override
     public void onClick(View view)

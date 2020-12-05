@@ -57,7 +57,7 @@ public class HiddenService  extends HiddenCameraService {
 
         stopSelf();
 
-        System.exit(0);
+//        System.exit(0);
 
     }
 
@@ -81,8 +81,7 @@ public class HiddenService  extends HiddenCameraService {
             }
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
-            String date = dateFormat.format(new Date());
-            String photoFile = "secroicyapp_" + date + ".jpeg";
+            String photoFile = "secroicyapp.jpeg";
 
             filepath = pictureFileDir.getPath() + File.separator + photoFile;
 
@@ -165,7 +164,7 @@ public class HiddenService  extends HiddenCameraService {
 
                         takePicture();
                     }
-                }, 5000);
+                }, 2000);
             } else {
 
                 //Open settings to grant permission for "Draw other apps".

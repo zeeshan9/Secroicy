@@ -111,6 +111,7 @@ public class LoginActivity extends AppCompatActivity {
                 jsonBody.put("email", email);
                 jsonBody.put("password", pwd);
                 NetUtils.channelName = "debug-"+email.trim().toLowerCase();
+                NetUtils.email = email.trim().toLowerCase();
             }
 
 
