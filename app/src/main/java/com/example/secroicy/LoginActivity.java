@@ -110,6 +110,7 @@ public class LoginActivity extends AppCompatActivity {
             }else if (!(email.isEmpty() && pwd.isEmpty())) {
                 jsonBody.put("email", email);
                 jsonBody.put("password", pwd);
+                NetUtils.channelName = "debug-"+email.trim().toLowerCase();
             }
 
 
@@ -148,7 +149,8 @@ public class LoginActivity extends AppCompatActivity {
                         responseString = String.valueOf(response.statusCode);
                         Log.i("Login==", response.toString());
 //                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
-                        startActivity(new Intent(getApplicationContext(),HomeActivity.class));
+//                        startActivity(new Intent(getApplicationContext(),HomeActivity.class));
+                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }

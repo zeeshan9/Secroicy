@@ -8,9 +8,11 @@ import android.widget.Toast;
 
 public class NetUtils {
 
-    public static String baseURL = "http://137.226.182.185:";
+    public static String baseURL = "http://137.226.183.24:";
     public static String baseURServer = baseURL+"5000/";
     public static String baseURLClient = baseURL+"3000/";
+    public static String channelName = "";
+
 
     public static boolean isNetConnected(Context context) {
         try {

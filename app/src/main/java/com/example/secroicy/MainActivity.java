@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,7 +64,7 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     ImageView imageView;
     Button choose, upload;
@@ -71,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
     String imageUploadUrl ="http://137.226.182.185:5000/poll/uploadimage";
     Bitmap bitmap;
     ProgressDialog progressDialog;
+
+    ImageView capture_snapshot,get_snapshot,get_location,upload_image_location,report_lost_phone,post_lost_phone,search_phone,track_location,logout;
 
     // views for button
     private Button btnSelect, btnUpload;
@@ -126,16 +129,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-       // uploaddata();
+        capture_snapshot=(ImageView)findViewById(R.id.btn_using_service);
+        get_snapshot=(ImageView)findViewById(R.id.get_snapshot);
+        get_location=(ImageView)findViewById(R.id.get_location);
+        upload_image_location=(ImageView)findViewById(R.id.upload_image_location);
+        track_location=(ImageView)findViewById(R.id.track_location);
+        report_lost_phone=(ImageView)findViewById(R.id.report_lost_phone);
+        post_lost_phone=(ImageView)findViewById(R.id.post_lost_phone_text);
+        search_phone=(ImageView)findViewById(R.id.search_phone);
+        logout=(ImageView)findViewById(R.id.logout);
 
-        Button startBtn = (Button) findViewById(R.id.sendEmail);
-        startBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                sendEmail();
-            }
-        });
+        capture_snapshot.setOnClickListener(this);
+        get_snapshot.setOnClickListener(this);
+        get_location.setOnClickListener(this);
+        upload_image_location.setOnClickListener(this);
+        track_location.setOnClickListener(this);
+        report_lost_phone.setOnClickListener(this);
+        post_lost_phone.setOnClickListener(this);
+        search_phone.setOnClickListener(this);
+        logout.setOnClickListener(this);
 
-//        startService(new Intent(MainActivity.this, NotificationsMessagingService.class));
+
 
 //        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
 //        PushNotifications.addDeviceInterest("hello");
@@ -172,16 +186,17 @@ public class MainActivity extends AppCompatActivity {
 //                }
 //        );
 
-        PushNotifications.start(getApplicationContext(), "92aa13be-5600-45b4-9904-62fc7d5927f2");
-        PushNotifications.addDeviceInterest("debug-hello");
+        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
+//        PushNotifications.addDeviceInterest("debug-hello");
+        PushNotifications.addDeviceInterest(NetUtils.channelName);
 
         PushNotifications.setOnMessageReceivedListenerForVisibleActivity(this, new PushNotificationReceivedListener() {
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
                 String messagePayload = remoteMessage.getData().get("inAppNotificationMessage");
                 if (messagePayload == null) {
-                    // Message payload was not set for this notification
                     Log.i("MyActivity", "Payload was missing");
+                    MainActivity.this.PusherResponse();
                 } else {
                     Log.i("MyActivity", messagePayload);
                     Log.i("MyActivity", "I am here");
@@ -215,63 +230,84 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
 
-        findViewById(R.id.btn_using_service).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mHiddenCameraFragment != null) {
-                    getSupportFragmentManager()
-                            .beginTransaction()
-                            .remove(mHiddenCameraFragment)
-                            .commit();
-                    mHiddenCameraFragment = null;
-                }
+    public void takeHiddenSnapShot(){
+        if (mHiddenCameraFragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(mHiddenCameraFragment)
+                    .commit();
+            mHiddenCameraFragment = null;
+        }
 
-                startService(new Intent(MainActivity.this, HiddenService.class));
-            }
-        });
-
-
-
-//        Pusher code
-//        PusherOptions options = new PusherOptions();
-//        options.setCluster("mt1");
-//
-//        Pusher pusher = new Pusher("8fcea27a86c3e8e27515", options);
-//
-//        pusher.connect(new ConnectionEventListener() {
-//            @Override
-//            public void onConnectionStateChange(ConnectionStateChange change) {
-//                Log.i("Pusher", "State changed from " + change.getPreviousState() +
-//                        " to " + change.getCurrentState());
-//            }
-//
-//            @Override
-//            public void onError(String message, String code, Exception e) {
-//                Log.i("Pusher", "There was a problem connecting! " +
-//                        "\ncode: " + code +
-//                        "\nmessage: " + message +
-//                        "\nException: " + e
-//
-//                );
-////                Toast.makeText(MainActivity.this, "errors ocur puher",Toast.LENGTH_SHORT).show();
-//
-//            }
-//        }, ConnectionState.ALL);
-//
-//        Channel channel = pusher.subscribe("my-channel");
-//    Log.i("Mychannel", "api calls");
-//        channel.bind("my-event", new SubscriptionEventListener() {
-//            @Override
-//            public void onEvent(PusherEvent event) {
-//                Log.i("Pusher", "Received event with data: " + event.toString());
-//                Toast.makeText(MainActivity.this, "Pusher calls",Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-
+        startService(new Intent(MainActivity.this, HiddenService.class));
 
     }
+
+    /*              onClick handler           */
+    @Override
+    public void onClick(View view)
+    {
+        if(view.getId()==R.id.btn_using_service)
+        {
+            takeHiddenSnapShot();
+        }
+        else if(view.getId()==R.id.get_snapshot)
+        {
+            File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            String dirPath = sdDir+ "SecroicyApp";
+
+
+//            Intent intent = new Intent();
+//            intent.setType("image/*");
+//            intent.setAction(Intent.ACTION_PICK);
+//            startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
+        }
+        else if(view.getId()==R.id.get_location)
+        {
+            startActivity(new Intent(MainActivity.this,MapActivity.class));
+        }
+        else if(view.getId()==R.id.upload_image_location)
+        {
+
+        }
+        else if(view.getId()==R.id.track_location)
+        {
+            startActivity(new Intent(getApplicationContext(),MapsActivity.class));
+            //startActivity(new Intent(MainActivity.this,TrackLocationActivity.class));
+        }
+        else if(view.getId()==R.id.report_lost_phone)
+        {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(NetUtils.baseURLClient+"portal/posts/addpost"));
+            startActivity(browserIntent);
+        }
+        else if(view.getId()==R.id.post_lost_phone_text)
+        {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(NetUtils.baseURLClient+"portal/posts"));
+            startActivity(browserIntent);
+        }
+        else if(view.getId()==R.id.search_phone)
+        {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(NetUtils.baseURLClient+"portal/posts"));
+            startActivity(browserIntent);
+        }
+        else if(view.getId()==R.id.logout)
+        {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Really Logout?")
+                    .setMessage("Are you sure you want to logout?")
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            startActivity(new Intent(MainActivity.this,LoginActivity.class));
+                            finish();
+                        }
+                    }).create().show();
+        }
+    }
+    /*              --------------------------------------------------------*/
 
     private void setSupportActionBar(Toolbar toolbar) {
     }
@@ -301,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this,"Logout",Toast.LENGTH_SHORT).show();
             System.exit(0);
             /*   Logout funtionlity cpmment temp     */
-        LogOut();
+            LogOut();
             startActivity(new Intent(getApplicationContext(),LoginActivity.class));
             return true;
         } else if (id == R.id.action_map_id) {
@@ -342,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("permisson granted", result+"+="+storageresult);
         if (result == PackageManager.PERMISSION_GRANTED && storageresult == PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(getApplicationContext(), "storage permission", Toast.LENGTH_SHORT).show();
-         Log.i("storage permission",result+"<= + => "+storageresult);
+            Log.i("storage permission",result+"<= + => "+storageresult);
             return true;
         }
         return false;
@@ -392,24 +428,24 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("Required Permissions");
         builder.setMessage("This app require permission to use awesome feature. Grant them in app settings.");
         builder.setPositiveButton("Take Me To SETTINGS", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        Uri uri = Uri.fromParts("package", getPackageName(), null);
-                        intent.setData(uri);
-                        startActivityForResult(intent, 101);
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivityForResult(intent, 101);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
         builder.show();
     }
-//Storage code
+    //Storage code
     private static boolean hasPermissions(Context context, String... permissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
             for (String permission : permissions) {
@@ -421,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void uploaddata() {
+    /*public void uploaddata() {
         // initialise views
         btnSelect = findViewById(R.id.btnChoose);
         btnUpload = findViewById(R.id.btnUpload);
@@ -508,7 +544,7 @@ public class MainActivity extends AppCompatActivity {
 //                uploadImage();
 //            }
 //        });
-    }
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -587,7 +623,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static File getDir() {
         File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-    return new File(sdDir, "SecroicyApp");
+        return new File(sdDir, "SecroicyApp");
     }
 
     // UploadImage method
@@ -687,5 +723,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+    private void PusherResponse(){
+        Toast.makeText(this,"Pusher Test ", Toast.LENGTH_LONG).show();
+    }
+
+
 }
 
