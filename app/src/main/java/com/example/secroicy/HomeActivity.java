@@ -22,7 +22,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        capture_snapshot=(ImageView)findViewById(R.id.capture_snapshot);
+        /*capture_snapshot=(ImageView)findViewById(R.id.capture_snapshot);
         get_snapshot=(ImageView)findViewById(R.id.get_snapshot);
         get_location=(ImageView)findViewById(R.id.get_location);
         upload_image_location=(ImageView)findViewById(R.id.upload_image_location);
@@ -40,14 +40,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         report_lost_phone.setOnClickListener(this);
         post_lost_phone.setOnClickListener(this);
         search_phone.setOnClickListener(this);
-        logout.setOnClickListener(this);
+        logout.setOnClickListener(this);*/
     }
     @Override
     public void onClick(View view)
     {
-        if(view.getId()==R.id.capture_snapshot)
+/*
+        if(view.getId()==R.id.btn_using_service)
         {
-            findViewById(R.id.btn_using_service).setOnClickListener(new View.OnClickListener() {
+            startActivity(new Intent(HomeActivity.this,MainActivity.class));
+            */
+/*findViewById(R.id.btn_using_service).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (mHiddenCameraFragment != null) {
@@ -59,7 +62,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     startService(new Intent(HomeActivity.this, HiddenService.class));
                 }
-            });
+            });*//*
+
         }
         else if(view.getId()==R.id.get_snapshot)
         {
@@ -109,5 +113,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }).create().show();
         }
+*/
     }
 }
