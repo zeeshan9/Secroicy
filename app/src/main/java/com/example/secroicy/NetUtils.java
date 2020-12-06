@@ -13,6 +13,7 @@ public class NetUtils {
     public static String baseURLClient = baseURL+"3000/";
     public static String channelName = "";
     public static String email = "";
+    public static String cellNo = "";
 
 
     public static boolean isNetConnected(Context context) {
