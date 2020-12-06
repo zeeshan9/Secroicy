@@ -53,6 +53,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.telephony.SmsManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
@@ -171,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-        PushNotifications.start(getApplicationContext(), "410ee95b-fffc-4c01-aaa5-d7760e0358cb");
+        PushNotifications.start(getApplicationContext(), "b17d4827-687e-4155-9507-b19b2d9e407a");
 //        PushNotifications.addDeviceInterest("debug-hello");
         PushNotifications.addDeviceInterest(NetUtils.channelName);
 
@@ -653,7 +654,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             jsonBody.put("latitude", latitude);
             jsonBody.put("longitude", longitude);
             jsonBody.put("time", time);
-            jsonBody.put("imageUrl", encodedImg);
+            jsonBody.put("encodedimage", encodedImg);
 
             final String requestBody = jsonBody.toString();
 
@@ -689,8 +690,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (response != null) {
                         responseString = String.valueOf(response.statusCode);
                         if(responseString.equals("200")){
-                            Toast.makeText(MainActivity.this,"data sent successfully", Toast.LENGTH_LONG).show();
                             triggerCheck = false;
+//                            NetUtils.cellNo =
+                            sendSMS();
                         }
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
@@ -706,6 +708,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             requestQueue.add(stringRequest);
         } catch (JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    public void sendSMS() {
+        String phoneNo = NetUtils.cellNo;
+        String msg = "Location of your lost phone has been retrieved. Please login to web portal to view it.";
+
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, msg, null, null);
+            Toast.makeText(getApplicationContext(), "Message Sent",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception ex) {
+            Toast.makeText(getApplicationContext(),ex.getMessage().toString(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 }

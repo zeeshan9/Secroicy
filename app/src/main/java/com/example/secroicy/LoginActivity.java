@@ -148,10 +148,13 @@ public class LoginActivity extends AppCompatActivity {
                     String responseString = "";
                     if (response != null) {
                         responseString = String.valueOf(response.statusCode);
-                        Log.i("Login==", response.toString());
-//                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
-//                        startActivity(new Intent(getApplicationContext(),HomeActivity.class));
-                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                        if((responseString.equals("200"))){
+                            Log.i("Login==", response.toString());
+                            startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                        }
+                        else {
+                            Toast.makeText(LoginActivity.this,"Invalid credentials",Toast.LENGTH_LONG).show();
+                        }
                     }
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }
